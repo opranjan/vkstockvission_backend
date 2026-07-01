@@ -59,7 +59,7 @@ async function generateUserAgreementBuffer(submission, ipAddress) {
       .text(`Mobile: ${mobile}`, leftMargin + 10, boxTop + 46);
     doc.moveDown(5);
     doc.text(`Agreement Date: ${agreementDate}`, leftMargin);
-    doc.moveDown(0.8);
+    // doc.moveDown(0.8);
 
     // ================= HELPERS =================
     function heading(title) {
@@ -184,8 +184,8 @@ section(
   "In the event of grievances related to non-receipt of the research report, missing content, or deficiencies in services, the Client may raise a grievance. The Research Analyst will ensure Redressal within 7 days of such complaint.\n\n" +
   "The client is required to follow the following procedure for any grievance:\n\n" +
   "Step 1: The client should first contact the RA at the contact details mentioned below:\n" +
-  "Contact No.: 7977117177\n" +
-  "Mail ID:saditya21p@gmail.com \n\n" +
+  "Contact No.: +91800048090\n" +
+  "Mail ID:admin@vkstockvission.in \n" +
   "Step 2: In case, if the client is unsatisfied, he can lodge a complaint with the SEBI through SEBI's SCORES platform at www.scores.sebi.gov.in.\n" +
   "Step 3: The client can also consider to seek resolution through the Online Dispute Resolution (ODR) mechanism through SMART ODR Portal: https://smartodr.in.\n\n" +
   "DISCLAIMER: The client is strictly required to follow the procedure as mentioned above, otherwise the RA shall not be liable delay in resolution of the grievance.\n\n" +
@@ -265,7 +265,7 @@ section(
     // doc.addPage();
     heading("CONSENT & ACCEPTANCE:");
     const consentTop = doc.y + 20;
-    doc.rect(leftMargin, consentTop, width, 290).stroke();
+    doc.rect(leftMargin, consentTop, width, 200).stroke();
     doc.font(regular).fillColor(gray)
       .text(`I, ${fullName}, acknowledge that I have read and agree to the complete Terms & Conditions set forth by VKSTOCKVISION as of ${agreementDate}.`,
         leftMargin + 10, consentTop + 10, { width: width - 20, align: "justify" });
@@ -307,7 +307,7 @@ section(
      // === FINAL CLOSING SECTION ===
 const footerTop = doc.y ;
 const footerPadding = 12;
-const footerBoxHeight = 95;
+const footerBoxHeight = 75;
 const footerLeft = leftMargin;
 const footerWidth = width;
 
