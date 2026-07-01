@@ -79,7 +79,7 @@ async function generateUserAgreementBuffer(submission, ipAddress) {
     function addFooter() {
       const footerY = 780;
       doc.fontSize(9).fillColor(lightGray)
-        .text("VKStockVision • admin@vkstockvission.com • +91-8000489090",
+        .text("VKStockVision • admin@vkstockvission.in • +91-8000489090",
           leftMargin, footerY - 25, { width, align: "center" });
       doc.text("Website: https://vkstockvission.in/", leftMargin, footerY - 12, { width, align: "center" });
     }
@@ -324,7 +324,7 @@ doc.font("Helvetica")
   .fillColor("#333")
   .fontSize(10)
   .text("SEBI Registration No. INH000019831", footerLeft + footerPadding, doc.y + 3)
-  .text("Email: admin@vkstockvission.com", footerLeft + footerPadding, doc.y + 3)
+  .text("Email: admin@vkstockvission.in", footerLeft + footerPadding, doc.y + 3)
   .text("Phone: +91-8000489090", footerLeft + footerPadding, doc.y + 3)
   .text("Website: https://vkstockvission.in/", footerLeft + footerPadding, doc.y + 3);
 

@@ -15,7 +15,7 @@ const COMPANY = {
   },
 
   CONTACT: {
-    SUPPORT_EMAIL: "admin@vkstockvission.com",
+    SUPPORT_EMAIL: "admin@vkstockvission.in",
     REPORT_MOBILE: "+91-8000489090",
   },
 
