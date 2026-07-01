@@ -92,7 +92,7 @@ async function generateUserAgreementBuffer(submission, ipAddress) {
   "ii. Client: The individual or entity subscribing to or availing research services provided by the Research Analyst, hereinafter referred to as the 'Client'.",
   leftMargin,
   doc.y,
-  { width, align: "justify", lineGap: 4 }
+  { width, align: "justify", lineGap: 1}
 );
 
  section(
@@ -265,7 +265,7 @@ section(
     // doc.addPage();
     heading("CONSENT & ACCEPTANCE:");
     const consentTop = doc.y + 0;
-    doc.rect(leftMargin, consentTop, width, 200).stroke();
+    doc.rect(leftMargin, consentTop, width, 220).stroke();
     doc.font(regular).fillColor(gray)
       .text(`I, ${fullName}, acknowledge that I have read and agree to the complete Terms & Conditions set forth by VKSTOCKVISION as of ${agreementDate}.`,
         leftMargin + 10, consentTop + 10, { width: width - 20, align: "justify" });
@@ -298,10 +298,10 @@ section(
       }
     }
 
-    doc.moveDown(2);
+    doc.moveDown(0.5);
     doc.fontSize(9).fillColor(lightGray)
       .text("Note: This document contains the full Terms & Conditions. Visit https://vkstockvission.in for more info.", leftMargin+10, doc.y, { width, align: "justify" });
-       doc.moveDown(2);
+       doc.moveDown(1);
 
 
      // === FINAL CLOSING SECTION ===
@@ -326,13 +326,13 @@ doc.font("Helvetica")
   .text("SEBI Registration No. INH000019831", footerLeft + footerPadding, doc.y + 3)
   .text("Email: admin@vkstockvission.in", footerLeft + footerPadding, doc.y + 3)
   .text("Phone: +91-8000489090", footerLeft + footerPadding, doc.y + 3)
-  .text("Website: https://vkstockvission.in/", footerLeft + footerPadding, doc.y + 3);
+  .text("Website: https://vkstockvission.in/", footerLeft + footerPadding, doc.y + 1);
 
-doc.moveDown(1);
+doc.moveDown(0.5);
 doc.font("Helvetica-Bold")
   .fillColor("#1F3B77")
   .fontSize(11)
-  .text("Thank you for choosing VkStockVision", footerLeft + footerPadding, doc.y + 5);
+  .text("Thank you for choosing VkStockVision", footerLeft + footerPadding, doc.y + 0);
 
 doc.font("Helvetica")
   .fillColor("#555")
