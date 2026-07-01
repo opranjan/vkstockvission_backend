@@ -89,44 +89,261 @@ async function submit(req, res) {
 // the submission, then fan out invoice + agreement emails via the same
 // emailQueue the regular /submit path uses. The DB row is the source of
 // truth — if enqueue fails the data is still saved and can be replayed.
+
+
+// async function submitWithAgreement(req, res) {
+//   try {
+//     const files = req.files || {};
+//     const panFile = files.panDoc?.[0];
+//     const aadharFile = files.aadharDoc?.[0];
+
+//     const { fullName, email, mobile, signatureBase64, location, lat, lng } = req.body;
+
+//     const errors = [];
+//     if (!fullName) errors.push({ field: "fullName", message: "Name is required" });
+//     if (!email) errors.push({ field: "email", message: "Email is required" });
+//     if (!mobile) errors.push({ field: "mobile", message: "Mobile is required" });
+//     if (errors.length) return res.status(400).json({ ok: false, errors });
+
+//     const stamp = Date.now();
+//     const [panDocMeta, aadharDocMeta] = await Promise.all([
+//       panFile
+//         ? uploadToCloudinary(panFile.buffer, `${stamp}-${fullName}-PAN-${panFile.originalname}`)
+//         : Promise.resolve(null),
+//       aadharFile
+//         ? uploadToCloudinary(aadharFile.buffer, `${stamp}-${fullName}-AADHAR-${aadharFile.originalname}`)
+//         : Promise.resolve(null),
+//     ]);
+
+//     // IPv6 loopback / IPv4-mapped prefix normalisation so the stored IP
+//     // matches what a human reading the audit log would expect.
+//     let clientIp =
+//       req.headers["x-forwarded-for"]?.split(",")[0]?.trim() ||
+//       req.headers["x-real-ip"] ||
+//       req.connection?.remoteAddress ||
+//       req.socket?.remoteAddress ||
+//       req.ip;
+//     if (clientIp === "::1") clientIp = "127.0.0.1";
+//     if (clientIp?.startsWith("::ffff:")) clientIp = clientIp.replace("::ffff:", "");
+
+//     const formattedLocation = location
+//       ? `${location} | Lat: ${lat ?? "NA"}, Lng: ${lng ?? "NA"}`
+//       : `IP: ${clientIp}`;
+
+//     const submission = await Submission.create({
+//       fullName,
+//       email,
+//       mobile,
+//       pan: req.body.pan,
+//       dob: req.body.dob,
+//       amount: req.body.amount ? parseFloat(req.body.amount) : undefined,
+//       paymentDate: req.body.paymentDate,
+//       txnId: req.body.txnId,
+//       agentName: req.body.agentName,
+//       panDoc: panDocMeta,
+//       aadharDoc: aadharDocMeta,
+//       signature: signatureBase64,
+//       agreementAccepted: !!signatureBase64,
+//       agreementAcceptedAt: signatureBase64 ? new Date() : null,
+//       agreementIp: clientIp,
+//       location: formattedLocation,
+//     });
+
+//     // Always send the agreement email; only send the invoice when an actual
+//     // amount was captured (agreement-only signups have no purchase to invoice).
+//     // txnId may be absent in this flow, so fall back to the submission id
+//     // for the dedupe jobId.
+//     const dedupeKey = submission.txnId || submission._id.toString();
+//     const jobs = [
+//       emailQueue.add(
+//         JOB_TYPES.AGREEMENT_EMAIL,
+//         { submissionId: submission._id.toString(), clientIp },
+//         { jobId: `agreement-${dedupeKey}` }
+//       ),
+//     ];
+//     if (submission.amount) {
+//       jobs.push(
+//         emailQueue.add(
+//           JOB_TYPES.INVOICE_EMAIL,
+//           { submissionId: submission._id.toString() },
+//           { jobId: `invoice-${dedupeKey}` }
+//         )
+//       );
+//     }
+//     try {
+//       await Promise.all(jobs);
+//     } catch (enqueueErr) {
+//       console.error(
+//         `⚠️  Enqueue failed for ${submission._id} — submission saved, will need manual replay:`,
+//         enqueueErr.message
+//       );
+//     }
+
+//     return res.status(201).json({
+//       ok: true,
+//       message: "Submission received. Email will arrive shortly.",
+//       data: submission,
+//     });
+//   } catch (err) {
+//     console.error("❌ Combined error:", err);
+//     return res.status(500).json({ ok: false, message: "Server error" });
+//   }
+// }
+
+
+
+
+
+
 async function submitWithAgreement(req, res) {
+  console.log("\n================= submitWithAgreement START =================");
+
   try {
+    console.log("➡️ Request received");
+
     const files = req.files || {};
     const panFile = files.panDoc?.[0];
     const aadharFile = files.aadharDoc?.[0];
 
-    const { fullName, email, mobile, signatureBase64, location, lat, lng } = req.body;
+    console.log("📂 Files:");
+    console.log({
+      panExists: !!panFile,
+      aadharExists: !!aadharFile,
+    });
+
+    if (panFile) {
+      console.log("PAN FILE:", {
+        fieldname: panFile.fieldname,
+        originalname: panFile.originalname,
+        mimetype: panFile.mimetype,
+        size: panFile.size,
+        hasBuffer: !!panFile.buffer,
+        bufferLength: panFile.buffer?.length,
+      });
+    }
+
+    if (aadharFile) {
+      console.log("AADHAR FILE:", {
+        fieldname: aadharFile.fieldname,
+        originalname: aadharFile.originalname,
+        mimetype: aadharFile.mimetype,
+        size: aadharFile.size,
+        hasBuffer: !!aadharFile.buffer,
+        bufferLength: aadharFile.buffer?.length,
+      });
+    }
+
+    const {
+      fullName,
+      email,
+      mobile,
+      signatureBase64,
+      location,
+      lat,
+      lng,
+    } = req.body;
+
+    console.log("📝 Body:");
+    console.log({
+      fullName,
+      email,
+      mobile,
+      pan: req.body.pan,
+      amount: req.body.amount,
+      txnId: req.body.txnId,
+      signatureLength: signatureBase64?.length || 0,
+    });
 
     const errors = [];
-    if (!fullName) errors.push({ field: "fullName", message: "Name is required" });
-    if (!email) errors.push({ field: "email", message: "Email is required" });
-    if (!mobile) errors.push({ field: "mobile", message: "Mobile is required" });
-    if (errors.length) return res.status(400).json({ ok: false, errors });
+
+    if (!fullName)
+      errors.push({ field: "fullName", message: "Name is required" });
+
+    if (!email)
+      errors.push({ field: "email", message: "Email is required" });
+
+    if (!mobile)
+      errors.push({ field: "mobile", message: "Mobile is required" });
+
+    if (errors.length) {
+      console.log("❌ Validation Failed", errors);
+      return res.status(400).json({
+        ok: false,
+        errors,
+      });
+    }
+
+    console.log("✅ Validation Passed");
 
     const stamp = Date.now();
-    const [panDocMeta, aadharDocMeta] = await Promise.all([
-      panFile
-        ? uploadToCloudinary(panFile.buffer, `${stamp}-${fullName}-PAN-${panFile.originalname}`)
-        : Promise.resolve(null),
-      aadharFile
-        ? uploadToCloudinary(aadharFile.buffer, `${stamp}-${fullName}-AADHAR-${aadharFile.originalname}`)
-        : Promise.resolve(null),
-    ]);
 
-    // IPv6 loopback / IPv4-mapped prefix normalisation so the stored IP
-    // matches what a human reading the audit log would expect.
+    let panDocMeta = null;
+    let aadharDocMeta = null;
+
+    // ---------------- PAN Upload ----------------
+    try {
+      if (panFile) {
+        console.log("☁️ Uploading PAN to Cloudinary...");
+
+        panDocMeta = await uploadToCloudinary(
+          panFile.buffer,
+          `${stamp}-${fullName}-PAN-${panFile.originalname}`
+        );
+
+        console.log("✅ PAN Uploaded");
+        console.log(panDocMeta);
+      }
+    } catch (err) {
+      console.error("❌ PAN Upload Failed");
+      console.error(err);
+      console.error(err.stack);
+      throw err;
+    }
+
+    // ---------------- Aadhaar Upload ----------------
+    try {
+      if (aadharFile) {
+        console.log("☁️ Uploading Aadhaar to Cloudinary...");
+
+        aadharDocMeta = await uploadToCloudinary(
+          aadharFile.buffer,
+          `${stamp}-${fullName}-AADHAR-${aadharFile.originalname}`
+        );
+
+        console.log("✅ Aadhaar Uploaded");
+        console.log(aadharDocMeta);
+      }
+    } catch (err) {
+      console.error("❌ Aadhaar Upload Failed");
+      console.error(err);
+      console.error(err.stack);
+      throw err;
+    }
+
+    console.log("☁️ Cloudinary Upload Complete");
+
+    // ---------------- Client IP ----------------
+
     let clientIp =
       req.headers["x-forwarded-for"]?.split(",")[0]?.trim() ||
       req.headers["x-real-ip"] ||
       req.connection?.remoteAddress ||
       req.socket?.remoteAddress ||
       req.ip;
+
     if (clientIp === "::1") clientIp = "127.0.0.1";
-    if (clientIp?.startsWith("::ffff:")) clientIp = clientIp.replace("::ffff:", "");
+    if (clientIp?.startsWith("::ffff:"))
+      clientIp = clientIp.replace("::ffff:", "");
+
+    console.log("🌐 Client IP:", clientIp);
 
     const formattedLocation = location
       ? `${location} | Lat: ${lat ?? "NA"}, Lng: ${lng ?? "NA"}`
       : `IP: ${clientIp}`;
+
+    // ---------------- Mongo Save ----------------
+
+    console.log("💾 Saving Submission...");
 
     const submission = await Submission.create({
       fullName,
@@ -134,7 +351,9 @@ async function submitWithAgreement(req, res) {
       mobile,
       pan: req.body.pan,
       dob: req.body.dob,
-      amount: req.body.amount ? parseFloat(req.body.amount) : undefined,
+      amount: req.body.amount
+        ? parseFloat(req.body.amount)
+        : undefined,
       paymentDate: req.body.paymentDate,
       txnId: req.body.txnId,
       agentName: req.body.agentName,
@@ -142,51 +361,87 @@ async function submitWithAgreement(req, res) {
       aadharDoc: aadharDocMeta,
       signature: signatureBase64,
       agreementAccepted: !!signatureBase64,
-      agreementAcceptedAt: signatureBase64 ? new Date() : null,
+      agreementAcceptedAt: signatureBase64
+        ? new Date()
+        : null,
       agreementIp: clientIp,
       location: formattedLocation,
     });
 
-    // Always send the agreement email; only send the invoice when an actual
-    // amount was captured (agreement-only signups have no purchase to invoice).
-    // txnId may be absent in this flow, so fall back to the submission id
-    // for the dedupe jobId.
-    const dedupeKey = submission.txnId || submission._id.toString();
+    console.log("✅ Mongo Saved");
+    console.log("Submission ID:", submission._id);
+
+    // ---------------- Queue ----------------
+
+    const dedupeKey =
+      submission.txnId || submission._id.toString();
+
     const jobs = [
       emailQueue.add(
         JOB_TYPES.AGREEMENT_EMAIL,
-        { submissionId: submission._id.toString(), clientIp },
-        { jobId: `agreement-${dedupeKey}` }
+        {
+          submissionId: submission._id.toString(),
+          clientIp,
+        },
+        {
+          jobId: `agreement-${dedupeKey}`,
+        }
       ),
     ];
+
     if (submission.amount) {
       jobs.push(
         emailQueue.add(
           JOB_TYPES.INVOICE_EMAIL,
-          { submissionId: submission._id.toString() },
-          { jobId: `invoice-${dedupeKey}` }
+          {
+            submissionId: submission._id.toString(),
+          },
+          {
+            jobId: `invoice-${dedupeKey}`,
+          }
         )
       );
     }
+
+    console.log("📧 Queueing Email...");
+
     try {
       await Promise.all(jobs);
+      console.log("✅ Email Queued");
     } catch (enqueueErr) {
-      console.error(
-        `⚠️  Enqueue failed for ${submission._id} — submission saved, will need manual replay:`,
-        enqueueErr.message
-      );
+      console.error("❌ Queue Failed");
+      console.error(enqueueErr);
+      console.error(enqueueErr.stack);
     }
+
+    console.log("================= SUCCESS =================");
 
     return res.status(201).json({
       ok: true,
       message: "Submission received. Email will arrive shortly.",
       data: submission,
     });
+
   } catch (err) {
-    console.error("❌ Combined error:", err);
-    return res.status(500).json({ ok: false, message: "Server error" });
+
+    console.error("\n================= submitWithAgreement ERROR =================");
+    console.error("Message:", err.message);
+    console.error("Name:", err.name);
+    console.error("Stack:");
+    console.error(err.stack);
+    console.error("Full Error:");
+    console.error(err);
+
+    return res.status(500).json({
+      ok: false,
+      message: err.message,
+    });
   }
 }
+
+
+
+
 
 // GET all submissions (Admin Panel) — lean() avoids hydration overhead.
 async function getSubmissions(req, res) {
