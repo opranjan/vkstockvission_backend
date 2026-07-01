@@ -197,6 +197,7 @@ async function submit(req, res) {
 
 async function submitWithAgreement(req, res) {
   console.log("\n================= submitWithAgreement START =================");
+  console.log("🔥 submitWithAgreement HIT", new Date().toISOString());
 
   try {
     console.log("➡️ Request received");
