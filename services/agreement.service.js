@@ -264,7 +264,7 @@ section(
     // ================= PAGE 5 =================
     // doc.addPage();
     heading("CONSENT & ACCEPTANCE:");
-    const consentTop = doc.y + 20;
+    const consentTop = doc.y + 0;
     doc.rect(leftMargin, consentTop, width, 200).stroke();
     doc.font(regular).fillColor(gray)
       .text(`I, ${fullName}, acknowledge that I have read and agree to the complete Terms & Conditions set forth by VKSTOCKVISION as of ${agreementDate}.`,
@@ -301,13 +301,13 @@ section(
     doc.moveDown(2);
     doc.fontSize(9).fillColor(lightGray)
       .text("Note: This document contains the full Terms & Conditions. Visit https://vkstockvission.in for more info.", leftMargin+10, doc.y, { width, align: "justify" });
-       doc.moveDown(4);
+       doc.moveDown(2);
 
 
      // === FINAL CLOSING SECTION ===
 const footerTop = doc.y ;
 const footerPadding = 12;
-const footerBoxHeight = 75;
+const footerBoxHeight = 55;
 const footerLeft = leftMargin;
 const footerWidth = width;
 
@@ -328,11 +328,11 @@ doc.font("Helvetica")
   .text("Phone: +91-8000489090", footerLeft + footerPadding, doc.y + 3)
   .text("Website: https://vkstockvission.in/", footerLeft + footerPadding, doc.y + 3);
 
-doc.moveDown(2);
+doc.moveDown(1);
 doc.font("Helvetica-Bold")
   .fillColor("#1F3B77")
   .fontSize(11)
-  .text("Thank you for choosing Stock Mantra", footerLeft + footerPadding, doc.y + 5);
+  .text("Thank you for choosing VkStockVision", footerLeft + footerPadding, doc.y + 5);
 
 doc.font("Helvetica")
   .fillColor("#555")

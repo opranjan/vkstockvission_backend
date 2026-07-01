@@ -37,7 +37,7 @@ async function handleAgreementEmail(job) {
   await sendEmail({
     to: submission.email,
     cc: process.env.EMAIL_CC,
-    subject: "Thank you for agreeing to our Terms – Stock Mantra",
+    subject: "Thank you for agreeing to our Terms – VkStockVision",
     html: emailHtml,
     attachment: agreementBuffer,
     filename: `User_Agreement_${submission.txnId || submission._id}.pdf`,
