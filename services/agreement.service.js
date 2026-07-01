@@ -265,7 +265,7 @@ section(
     // doc.addPage();
     heading("CONSENT & ACCEPTANCE:");
     const consentTop = doc.y + 0;
-    doc.rect(leftMargin, consentTop, width, 220).stroke();
+    doc.rect(leftMargin, consentTop, width, 225).stroke();
     doc.font(regular).fillColor(gray)
       .text(`I, ${fullName}, acknowledge that I have read and agree to the complete Terms & Conditions set forth by VKSTOCKVISION as of ${agreementDate}.`,
         leftMargin + 10, consentTop + 10, { width: width - 20, align: "justify" });
@@ -298,10 +298,10 @@ section(
       }
     }
 
-    doc.moveDown(0.5);
+    doc.moveDown(0.1);
     doc.fontSize(9).fillColor(lightGray)
       .text("Note: This document contains the full Terms & Conditions. Visit https://vkstockvission.in for more info.", leftMargin+10, doc.y, { width, align: "justify" });
-       doc.moveDown(1);
+       doc.moveDown(0.2);
 
 
      // === FINAL CLOSING SECTION ===
